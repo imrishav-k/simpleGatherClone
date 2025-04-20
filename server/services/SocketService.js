@@ -45,6 +45,13 @@ class SocketService {
             this.connectedUsers[socket.id].x = data.x;
             this.connectedUsers[socket.id].y = data.y;
             socket.broadcast.emit('playerMoved', this.connectedUsers[socket.id]);
+            this.io.emit('movementDetected', this.connectedUsers);
+          }
+        });
+
+        socket.on('nearbyPlayers', (data) => {
+          for(const id in data.nearbyPlayers) {
+            socket.to(id).emit('message', data.message);
           }
         });
       });

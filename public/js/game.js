@@ -37,9 +37,9 @@ class FirstScene extends Phaser.Scene {
           Game.players[data.id].player.setPosition(data.x, data.y);
           Game.players[data.id].nameText.setPosition(data.x, data.y-20);
           if(Game.inVicinity(Game.players[Game.myId].player, Game.players[data.id].player)) {
-            // Ask for webRTC connection
-            console.log('In vicinity of another player, initiate WebRTC connection');
-            // Implement WebRTC connection logic here
+            Game.nearbyPlayers[data.id] = Game.players[data.id];
+          } else if(Game.nearbyPlayers[data.id]) {
+            delete Game.nearbyPlayers[data.id];
           }
         }
       });
@@ -83,9 +83,9 @@ class FirstScene extends Phaser.Scene {
       for(const id in Game.players) {
         if(Game.players[id].player !== player) {
           if(Game.inVicinity(player, Game.players[id].player)) {
-            // Ask for webRTC connection
-            console.log('In vicinity of another player, initiate WebRTC connection'); 
-            // Implement WebRTC connection logic here
+            Game.nearbyPlayers[id] = Game.players[id];
+          } else if(Game.nearbyPlayers[id]) {
+            delete Game.nearbyPlayers[id];
           }
         }
       }
@@ -98,6 +98,8 @@ class Game {
   static myId;
   static players = {};
   static cursors;
+  static nearbyPlayers = {};
+  static prevState = {};
 
   config = {
     type: Phaser.AUTO,
@@ -133,7 +135,13 @@ class Game {
 
   static inVicinity(player1, player2) {
     const distance = Phaser.Math.Distance.Between(player1.x, player1.y, player2.x, player2.y);
-    return distance < 100; // Example threshold for vicinity
+    return distance < 100;
+  }
+
+  static compareNearbyPlayersStates(prevState, currState) {
+    const added = Object.keys(currState).filter(id => !prevState[id]);
+    const removed = Object.keys(prevState).filter(id => !currState[id]);
+    return { added, removed };
   }
 }
 
